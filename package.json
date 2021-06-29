@@ -5,7 +5,8 @@
     "main": "experiment.js",
     "scripts": {
         "experiment": "./node_modules/.bin/ws",
-        "build": "babel src -d public"
+        "build": "babel src -d public",
+        "dev": "find src -type f -print | entr npm run build"
     },
     "author": "Amy vanWell",
     "license": "ISC",
