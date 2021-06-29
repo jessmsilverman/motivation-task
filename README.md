@@ -1,13 +1,13 @@
 # jsPsych Template
 
-jsPsych is a framework for web-based experiments, useful for vision science.
-The following template is build for the DML and includes a framework for a web server for testing purposes, separate source and public trees, and a standard html for an intro and outro.
+jsPsych is a framework for web-based experiments that is particularly useful for vision science.
+The following jsPsych template is built for the DML and also includes a framework for a web server for testing purposes, separate source and public trees, and standard html for an intro and outro.
 
 # How To Install
 
-1. Git clone or download this repository
+1. Branch this repository and download the branch onto your computer.
 2. If you don't already have Node.js on your computer, install it from: [Download link](https://nodejs.org/en/download/)
-3. In terminal, navigate to the cloned repository and run the command:
+3. In terminal, navigate to the new repository and run the command:
 
 ```
 npm install
