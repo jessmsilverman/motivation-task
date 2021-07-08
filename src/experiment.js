@@ -15,14 +15,19 @@ const sampleIntro = {
     stimulus: "<div class='main' style='font-size:20px'>Demo text. Press any key to dismiss.</div>"
 }
 
-timeline.push(sampleIntro);
+if (!TEST) {
+    timeline.push(sampleIntro);
+}
+
 
 
 // SAMPLE DEFINITION OF A TRIAL TIMELINE WITH ONLY ONE TRIAL
 // NOTE: NO FIXATION CROSS IN THIS SAMPLE
 
 let testVariables = [
-    { prompt: "On the next screen, press [b] if you see a banana. Press [space] to continue.", stimulus: "imgs/banana.png" }
+    { prompt: "On the next screen, press [b] if you see a banana. Press [space] to continue.", stimulus: "imgs/banana.png" },
+    { prompt: "On the next screen, press [b] if you see a banana. Press [f] to continue.", stimulus: "imgs/banana.png" },
+    { prompt: "On the next screen, press [b] if you see a banana. Press [j] to continue.", stimulus: "imgs/banana.png" }
 ]
 
 // lines 30-46 DEFINE the code for a prompt and for a trial, they are not added to the timeline until line 51

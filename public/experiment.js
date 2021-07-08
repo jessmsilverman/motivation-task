@@ -3,7 +3,7 @@ let TEST = true;
 let SHOWTIMELINE = true;
 
 // if you want to do something once the page is loaded, you can do so on line 6.5
-document.addEventListener("DOMContentLoaded", function(event) {});
+document.addEventListener("DOMContentLoaded", function (event) {});
 
 // JSPSYCH CODE BEGINS HERE
 
@@ -15,12 +15,14 @@ const sampleIntro = {
     stimulus: "<div class='main' style='font-size:20px'>Demo text. Press any key to dismiss.</div>"
 };
 
-timeline.push(sampleIntro);
+if (!TEST) {
+    timeline.push(sampleIntro);
+}
 
 // SAMPLE DEFINITION OF A TRIAL TIMELINE WITH ONLY ONE TRIAL
 // NOTE: NO FIXATION CROSS IN THIS SAMPLE
 
-let testVariables = [{ prompt: "<p>On the next screen, press [b] if you see a banana.</p><p>Press [space] to continue.</p>", stimulus: "imgs/banana.png" }];
+let testVariables = [{ prompt: "On the next screen, press [b] if you see a banana. Press [space] to continue.", stimulus: "imgs/banana.png" }, { prompt: "On the next screen, press [b] if you see a banana. Press [f] to continue.", stimulus: "imgs/banana.png" }, { prompt: "On the next screen, press [b] if you see a banana. Press [j] to continue.", stimulus: "imgs/banana.png" }];
 
 // lines 30-46 DEFINE the code for a prompt and for a trial, they are not added to the timeline until line 51
 const promptText = {
@@ -46,8 +48,7 @@ const chooseTrial = {
     // sample trial timeline with only the trial (i.e. no fixation cross)
     // to add more trials, add elements to the array on line 41
 
-};
-const testTrialTimelines = {
+};const testTrialTimelines = {
     timeline: [promptText, chooseTrial],
     timeline_variables: testVariables,
     randomize_order: true,
@@ -59,7 +60,7 @@ timeline.push(testTrialTimelines);
 // final text to end experiment
 const sampleEnd = {
     type: 'html-keyboard-response',
-    stimulus: "<div class='main' style='font-size:20px'>End of trials. Press any key to continue to the debrief.</div>"
+    stimulus: "<div class='main' style='font-size:20px'>End of experiment. Press any key to dismiss.</div>"
 };
 
 timeline.push(sampleEnd);
@@ -75,11 +76,8 @@ if (TEST || SHOWTIMELINE) {
 jsPsych.init({
     timeline: timeline,
     on_finish: () => {
-        // once the timeline is complete, navigates to the debrief page
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString)
-        const id = urlParams.get('subject')
-
-        window.location.href = `./debrief.html?subject=${id}`;
+        if (TEST) {
+            alert("ALL DONE!");
+        };
     }
 });
