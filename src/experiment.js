@@ -54,6 +54,14 @@ let wordPairsA = [
     ["Zuvis", "Fish"]
 ];
 
+let wordPairsB=[
+    ["sadf", "fdsa"],
+];
+
+// https://stackoverflow.com/a/36756480
+// randomly select one of these two word pair arrays for the experiment
+let wordPairsForExperiment = Math.random() < 0.5 ? wordPairsA : wordPairsB
+
 let timeline = [];
 
 // a simple text plugin
@@ -73,9 +81,9 @@ function getCrossText(duration) {
     return crossText
 }
 
-function shuffledArray(){
- let shuffledArray= jsPsych.randomization.repeat(wordPairsA, 1)
- return shuffledArray
+function shuffledArray() {
+    let shuffledArray = jsPsych.randomization.repeat(wordPairsForExperiment, 1)
+    return shuffledArray
 }
 
 function study() {
@@ -84,7 +92,7 @@ function study() {
     let shuffled = shuffledArray()
     for (let i = 0; i < shuffled.length; i++) {
 
-    let pair = shuffled[i][0] + " - " + shuffled[i][1]
+        let pair = shuffled[i][0] + " - " + shuffled[i][1]
         // console.log(stimulus)
         // code to show a word pair
         timeline.push({
@@ -98,74 +106,140 @@ function study() {
     }
 }
 
-function testCriteria() {
+let testTrials = 0
+let answersTestedCorrectly = []
+
+function testCriteria(isFinalTest) {
     console.log('testCriteria')
-    let crossTextLong = getCrossText(1000)
     let questions = []
-    for (let i = 0; i < wordPairsA.length; i++) {
-       /*change to shuffled[i][0] for test*/ let prompt = wordPairsA[i][0] + " - "
-        let question = {
-            prompt: prompt
-        }
-        let answer = wordPairsA[i][1];
-
-        timeline.push({
-            type: 'survey-text',
-            questions: [question],
-            data: {
-                answer: answer,
-                prompt:prompt 
-            },
-            on_finish: function (data) {
-                console.log("data", data)
-                let responses = JSON.parse(data.responses)
-                let response = responses.Q0
-                let answer = data.answer
-                // Score the response as correct or incorrect.
-                // .trim removes spaces before and after input 
-                if (response.toLowerCase().trim() === answer.toLowerCase()) {
-                    data.correct = true;
-                } else {
-                    data.correct = false;
-                }
+    for (let i = 0; i < 16; i++) {
+        let wordPairsShuffled = shuffledArray()
+        for (let j = 0; j < wordPairsShuffled.length; j++) {
+            /*change to shuffled[i][0] for test*/
+            let prompt = wordPairsShuffled[j][0] + " - "
+            let question = {
+                prompt: prompt
             }
-        });
+            let answer = wordPairsShuffled[j][1];
 
-        // let displayAnswer = answer + (answer === wordPairsA[i][1] ? " Correct!" : " Incorrect");
-// for feedBack: https://www.jspsych.org/6.3/overview/dynamic-parameters/#randomizing-a-parameter-value
-        let feedBack = {
-            type: 'html-keyboard-response',
-            stimulus: function () {
-                // The feedback stimulus is a dynamic parameter because we can't know in advance whether
-                // the stimulus should be 'correct' or 'incorrect'.
-                // Instead, this function will check the accuracy of the last response and use that information to set
-                // the stimulus value on each trial.
-                var data = jsPsych.data.get().last(1).values()[0];
-                let last_trial_correct = data.correct
-                let last_question = data.prompt
-                let last_answer = data.answer
-                if (last_trial_correct) {
-                    // question "-" answer Correct 
-                    return /*"Correct!<br/>" +*/ last_question + last_answer; // the parameter value has to be returned from the function
-                } else {
-                    // question - answer Incorrect 
-                    return /*"Incorrect<br/>"*/ + last_question + last_answer; // the parameter value has to be returned from the function
-                }
+            // https://www.jspsych.org/7.0/overview/timeline/#conditional-timelines
+            let showTrial = function () {
+                // show the trial if they have not guessed it correctly.
+                const show = !answersTestedCorrectly.includes(answer)
 
+                console.log('testedcorrectly', answersTestedCorrectly, answer, show)
+                return show
             }
 
-        }
-        timeline.push (feedBack)
+            timeline.push({
+                conditional_function: showTrial,
+                timeline: [{
+                    type: 'survey-text',
+                    questions: () => [question],
+                    timeout: 4500,
+                    data: {
+                        answer: answer,
+                        prompt: prompt,
+                        i: j,
+                    },
+                    conditional_function: showTrial,
+                    on_finish: function (data) {
+                        console.log("data", data)
+                        let responses = JSON.parse(data.responses)
+                        let response = responses.Q0
+                        let answer = data.answer
+                        // Score the response as correct or incorrect.
+                        // .trim removes spaces before and after input 
+                        if (response && response.toLowerCase().trim() === answer.toLowerCase()) {
+                            data.correct = true;
+                        } else {
+                            data.correct = false;
+                        }
+                    }
 
-        timeline.push(crossTextLong)
+                }]
+            });
+
+            if (!isFinalTest) {
+                // for feedBack: https://www.jspsych.org/6.3/overview/dynamic-parameters/#randomizing-a-parameter-value
+                let feedBack = {
+                    conditional_function: showTrial,
+                    timeline: [{
+                        type: 'html-keyboard-response',
+                        trial_duration: 1500,
+                        response_ends_trial: false,
+                        stimulus: function () {
+                            // The feedback stimulus is a dynamic parameter because we can't know in advance whether
+                            // the stimulus should be 'correct' or 'incorrect'.
+                            // Instead, this function will check the accuracy of the last response and use that information to set
+                            // the stimulus value on each trial.
+                            var data = jsPsych.data.get().last(1).values()[0];
+                            let last_trial_correct = data.correct
+                            let last_question = data.prompt
+                            let last_answer = data.answer
+                            if (last_trial_correct) {
+                                answersTestedCorrectly.push(last_answer)
+                                // question "-" answer Correct 
+                                return '<span style="color: #228B22;font-size: 65%;">Correct!</span><br/>' + last_question + last_answer; // the parameter value has to be returned from the function
+                            } else {
+                                // question - answer Incorrect 
+                                return '<span style="color: #C41E3A;font-size: 65%;">Incorrect</span><br/>' + last_question + last_answer; // the parameter value has to be returned from the function
+                            }
+                        }
+                    }]
+                }
+                timeline.push(feedBack)
+            }
+
+            let crossTextLong = getCrossText(1000)
+            timeline.push({
+                timeline: [crossTextLong],
+                conditional_function: showTrial
+            })
+        }
+
     }
-
     console.log('questions', questions)
+}
 
-}<iframe src="https://tetris.com/play-tetris" width="100%" height="500" frameborder="0"></iframe>
-// study()
-testCriteria()
-// study()
+function tetris(done) {
+
+    // create tetris container
+    // https://github.com/Aerolab/blockrain.js#setup
+    const tetrisDiv = document.createElement("div");
+    tetrisDiv.style.width = '500px',
+        tetrisDiv.style.minHeight = '750px'
+    tetrisDiv.style.height = '80vh'
+    tetrisDiv.id = 'game'
+
+    const contentElement = document.getElementById('jspsych-content')
+    contentElement.appendChild(tetrisDiv)
+    // document.createElement(` <div id="tetris" style="width:500px; height:80vh;"></div>`)
+    $('#game').blockrain()
+
+    // const timerDiv = document.createElement("div")
+    // root.appendChild(timerDiv)
+
+    // let timer = 60 * 5
+    let timer = 60 * 5 // 5 mins
+
+    // timer ticks every 1 second for 5 mins
+    const timeout = setInterval(function () {
+        if (timer === 0) {
+            // when the timer expires, clear the timer (interval)
+            // remove the tetris,
+            // and call the done callback to tell jspsych it can move on in the timeline
+            clearInterval(timeout)
+            contentElement.removeChild(tetrisDiv)
+            // root.removeChild(timerDiv)
+            done()
+        } else {
+            timer = timer - 1
+            // timerDiv.innerText = timer
+            console.log(timer)
+        }
+    }, 1000)
+}
 
 // the first test has all the questions
 // for each question, the participant is shown the first word + a blank (using survey-text)
@@ -175,12 +249,21 @@ testCriteria()
 // (while) repeat this up to 16 total times, or until every question has been gotten right once
 
 
+// study()
+testCriteria(false)
+// study()
+
+// tetris
+// timeline.push({
+//     type: 'call-function',
+//     func: tetris
+// })
+
+// final test
+// testCriteria(true)
 
 
-
-
-
-
+// retention test
 
 jsPsych.init({
     timeline: timeline

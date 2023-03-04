@@ -9,7 +9,7 @@
  */
 
 
-jsPsych.plugins['survey-text'] = (function() {
+jsPsych.plugins['survey-text'] = (function () {
 
   var plugin = {};
 
@@ -70,13 +70,19 @@ jsPsych.plugins['survey-text'] = (function() {
       button_label: {
         type: jsPsych.plugins.parameterType.STRING,
         pretty_name: 'Button label',
-        default:  'Continue',
+        default: 'Continue',
         description: 'The text that appears on the button to finish the trial.'
+      },
+      timeout: {
+        type: jsPsych.plugins.parameterType.INT,
+        pretty_name: 'Timeout',
+        default: undefined,
+        description: 'Timeout'
       }
     }
   }
 
-  plugin.trial = function(display_element, trial) {
+  plugin.trial = function (display_element, trial) {
 
     for (var i = 0; i < trial.questions.length; i++) {
       if (typeof trial.questions[i].rows == 'undefined') {
@@ -96,18 +102,18 @@ jsPsych.plugins['survey-text'] = (function() {
 
     var html = '';
     // show preamble text
-    if(trial.preamble !== null){
-      html += '<div id="jspsych-survey-text-preamble" class="jspsych-survey-text-preamble">'+trial.preamble+'</div>';
+    if (trial.preamble !== null) {
+      html += '<div id="jspsych-survey-text-preamble" class="jspsych-survey-text-preamble">' + trial.preamble + '</div>';
     }
     // start form
     html += '<form id="jspsych-survey-text-form">'
 
     // generate question order
     var question_order = [];
-    for(var i=0; i<trial.questions.length; i++){
+    for (var i = 0; i < trial.questions.length; i++) {
       question_order.push(i);
     }
-    if(trial.randomize_question_order){
+    if (trial.randomize_question_order) {
       question_order = jsPsych.randomization.shuffle(question_order);
     }
 
@@ -115,28 +121,44 @@ jsPsych.plugins['survey-text'] = (function() {
     for (var i = 0; i < trial.questions.length; i++) {
       var question = trial.questions[question_order[i]];
       var question_index = question_order[i];
-      html += '<div id="jspsych-survey-text-'+question_index+'" class="jspsych-survey-text-question" style="margin: 2em 0em;">';
+      html += '<div id="jspsych-survey-text-' + question_index + '" class="jspsych-survey-text-question" style="margin: 2em 0em;">';
       html += '<p class="jspsych-survey-text">' + question.prompt + '</p>';
       var autofocus = i == 0 ? "autofocus" : "";
       var req = question.required ? "required" : "";
-      if(question.rows == 1){
-        html += '<input type="text" id="input-'+question_index+'"  name="#jspsych-survey-text-response-' + question_index + '" data-name="'+question.name+'" size="'+question.columns+'" '+autofocus+' '+req+' placeholder="'+question.placeholder+'"></input>';
+      if (question.rows == 1) {
+        html += '<input type="text" id="input-' + question_index + '"  name="#jspsych-survey-text-response-' + question_index + '" data-name="' + question.name + '" size="' + question.columns + '" ' + autofocus + ' ' + req + ' placeholder="' + question.placeholder + '"></input>';
       } else {
-        html += '<textarea id="input-'+question_index+'" name="#jspsych-survey-text-response-' + question_index + '" data-name="'+question.name+'" cols="' + question.columns + '" rows="' + question.rows + '" '+autofocus+' '+req+' placeholder="'+question.placeholder+'"></textarea>';
+        html += '<textarea id="input-' + question_index + '" name="#jspsych-survey-text-response-' + question_index + '" data-name="' + question.name + '" cols="' + question.columns + '" rows="' + question.rows + '" ' + autofocus + ' ' + req + ' placeholder="' + question.placeholder + '"></textarea>';
       }
       html += '</div>';
     }
 
     // add submit button
-    html += '<input type="submit" id="jspsych-survey-text-next" class="jspsych-btn jspsych-survey-text" value="'+trial.button_label+'"></input>';
+    html += '<input type="submit" id="jspsych-survey-text-next" class="jspsych-btn jspsych-survey-text" value="' + trial.button_label + '"></input>';
 
     html += '</form>'
     display_element.innerHTML = html;
 
     // backup in case autofocus doesn't work
-    display_element.querySelector('#input-'+question_order[0]).focus();
+    display_element.querySelector('#input-' + question_order[0]).focus();
 
-    display_element.querySelector('#jspsych-survey-text-form').addEventListener('submit', function(e) {
+    let timeout
+    if (trial.timeout) {
+      timeout = setTimeout(() => {
+        // save data
+        var trialdata = {
+          "rt": -1,
+          "responses": JSON.stringify({})
+        };
+
+        display_element.innerHTML = '';
+
+        // next trial
+        jsPsych.finishTrial(trialdata);
+      }, trial.timeout)
+    }
+
+    display_element.querySelector('#jspsych-survey-text-form').addEventListener('submit', function (e) {
       e.preventDefault();
       // measure response time
       var endTime = performance.now();
@@ -144,15 +166,15 @@ jsPsych.plugins['survey-text'] = (function() {
 
       // create object to hold responses
       var question_data = {};
-      
-      for(var index=0; index < trial.questions.length; index++){
+
+      for (var index = 0; index < trial.questions.length; index++) {
         var id = "Q" + index;
-        var q_element = document.querySelector('#jspsych-survey-text-'+index).querySelector('textarea, input'); 
+        var q_element = document.querySelector('#jspsych-survey-text-' + index).querySelector('textarea, input');
         var val = q_element.value;
         var name = q_element.attributes['data-name'].value;
-        if(name == ''){
+        if (name == '') {
           name = id;
-        }        
+        }
         var obje = {};
         obje[name] = val;
         Object.assign(question_data, obje);
@@ -165,11 +187,15 @@ jsPsych.plugins['survey-text'] = (function() {
 
       display_element.innerHTML = '';
 
+      if (timeout) {
+        clearTimeout(timeout)
+      }
       // next trial
       jsPsych.finishTrial(trialdata);
     });
 
     var startTime = performance.now();
+
   };
 
   return plugin;

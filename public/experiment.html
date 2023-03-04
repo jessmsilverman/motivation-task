@@ -5,10 +5,23 @@
 
     <!-- Styles CSS Page-->
     <link href="./required_scripts/jspsych-6.1.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style> 
+        * {
+          font-size: 2rem;
+          line-height: 2;
+        }
+      </style>
+
+    <!-- https://github.com/Aerolab/blockrain.js -->
+    <link rel="stylesheet" href="./blockrain/blockrain.css">
+
+    <!-- jQuery and Blockrain.js -->
+    <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script src="./blockrain/blockrain.jquery.min.js"></script>
 
     <!-- Lodash -->
     <!-- NOTE: I used _.shuffle() to shuffle arrays -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"></script>
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"></script> -->
 
     <!---ONLINE via PAVLOVIA-->
     <!-- <script type="text/javascript" src="lib/vendors/jspsych-6.3.0/jspsych.js"></script>
@@ -35,6 +48,7 @@
     <script type="text/javascript" src="./required_scripts/jspsych-6.1.0/plugins/jspsych-survey-likert.js"></script>
     <script type="text/javascript" src="./required_scripts/jspsych-6.1.0/plugins/jspsych-survey-text.js"></script>
     <script type="text/javascript" src="./required_scripts/jspsych-6.1.0/plugins/jspsych-external-html.js"></script>
+    <script type="text/javascript" src="./required_scripts/jspsych-6.1.0/plugins/jspsych-call-function.js"></script>
 
     <!-- Required jsPsych JS script and Plug-ins-->
     <!-- NOTE: you will need to import any other plugins before using them -->
