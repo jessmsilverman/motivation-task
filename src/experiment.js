@@ -54,20 +54,20 @@ let wordPairsA = [
     ["Zuvis", "Fish"]
 ];
 
-let wordPairsB=[
+let wordPairsB = [
     ["sadf", "fdsa"],
 ];
 
 // https://stackoverflow.com/a/36756480
 // randomly select one of these two word pair arrays for the experiment
-let wordPairsForExperiment = Math.random() < 0.5 ? wordPairsA : wordPairsB
+let wordPairsForExperiment = Math.random() < 0.000001 ? wordPairsA : wordPairsB
 
 let timeline = [];
 
 // a simple text plugin
 const sampleIntro = {
     type: 'html-keyboard-response',
-    stimulus: "<div class='main' style='font-size:20px'>Demo text. Press any key to dismiss.</div>"
+    stimulus: "<div class='main' style='font-size:20px'>Press any key to get started.</div>"
 }
 timeline.push(sampleIntro)
 // code to show a cross
@@ -106,6 +106,19 @@ function study() {
     }
 }
 
+function getRandomInt(x, y) {
+    return Math.floor(Math.random() * (y - x + 1) + x);
+}
+
+
+function randomMathOperation() {
+    return Math.random() < 0.5 ? '+' : '-'
+}
+
+function randomMathQuestion() {
+    return getRandomInt(1, 99) + ' ' + randomMathOperation() + ' ' + getRandomInt(1, 99)
+}
+
 let testTrials = 0
 let answersTestedCorrectly = []
 
@@ -142,7 +155,6 @@ function testCriteria(isFinalTest) {
                         prompt: prompt,
                         i: j,
                     },
-                    conditional_function: showTrial,
                     on_finish: function (data) {
                         console.log("data", data)
                         let responses = JSON.parse(data.responses)
@@ -196,14 +208,72 @@ function testCriteria(isFinalTest) {
                 timeline: [crossTextLong],
                 conditional_function: showTrial
             })
+
         }
 
+        timeline.push({
+            conditional_function: () => {
+                return answersTestedCorrectly.length < wordPairsForExperiment.length && !isFinalTest
+            },
+            timeline: [{
+                type: 'call-function',
+                async: true,
+                func: math,
+            }]
+        })
     }
     console.log('questions', questions)
 }
 
+
+function math(done) {
+    console.log('math!')
+    const contentElement = document.getElementById('jspsych-content')
+    const mathDiv = document.createElement("div");
+
+    const mathsubmit = document.createElement("button");
+    mathsubmit.innerHTML = 'Submit'
+    mathsubmit.classList.add('jspsych-btn')
+    mathsubmit.classList.add('jspsych-survey-text')
+
+    const textfield = document.createElement('input')
+    textfield.type = 'text'
+    textfield.style.width = '300px'
+    textfield.style.height = '32px'
+    textfield.style.marginBottom = '32px'
+    textfield.classList.add('jspsych-display-element')
+
+    function nextMath() {
+        mathDiv.innerText = randomMathQuestion()
+        textfield.value = ''
+    }
+
+    mathsubmit.addEventListener('click', function () {
+        nextMath()
+    })
+
+    textfield.addEventListener('keydown', function (e) {
+        if (e.code === 'Enter') {
+            nextMath()
+        }
+    })
+
+    contentElement.appendChild(mathDiv)
+    contentElement.appendChild(textfield)
+    contentElement.appendChild(mathsubmit)
+
+    nextMath()
+
+    let timeout = setTimeout(function () {
+        console.log('math done')
+        done()
+    }, 30000)
+
+}
+
 function tetris(done) {
 
+    const contentElement = document.getElementById('jspsych-content')
     // create tetris container
     // https://github.com/Aerolab/blockrain.js#setup
     const tetrisDiv = document.createElement("div");
@@ -212,7 +282,6 @@ function tetris(done) {
     tetrisDiv.style.height = '80vh'
     tetrisDiv.id = 'game'
 
-    const contentElement = document.getElementById('jspsych-content')
     contentElement.appendChild(tetrisDiv)
     // document.createElement(` <div id="tetris" style="width:500px; height:80vh;"></div>`)
     $('#game').blockrain()
@@ -256,12 +325,18 @@ testCriteria(false)
 // tetris
 // timeline.push({
 //     type: 'call-function',
+// async: true,
 //     func: tetris
 // })
 
 // final test
 // testCriteria(true)
 
+timeline.push({
+    type: 'html-keyboard-response',
+    stimulus: 'The end!',
+    response_ends_trial: false,
+})
 
 // retention test
 
