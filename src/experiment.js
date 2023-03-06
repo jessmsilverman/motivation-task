@@ -55,11 +55,58 @@ let wordPairsA = [
 ];
 
 let wordPairsB = [
-    ["sadf", "fdsa"],
+    ["Test", "Tset"],
+    ["Test1", "1tset"]
+    // ["Adata", "Needle"],
+    // ["Auksas", "Gold"],
+    // ["Bulve", "Potato"],
+    // ["Daina","Song"],
+    // ["Dumai", "Smoke"],
+    // ["Gelezis", "Iron"],
+    // ["Karalius", "King"],
+    // ["Kede", "Chair"],
+    // ["Kelnes", "Pants"],
+    // ["Kilimelis", "Rug"],
+    // ["Krautuve", "Store"],
+    // ["Kriaukle", "Sink"],
+    // ["Krosnis", "Stove"],
+    // ["Kumpis", "Ham"],
+    // ["Laidas", "Wire"],
+    // ["Laiskas", "Letter"],
+    // ["Maisas", "Bag"],
+    // ["Masina", "Car"],
+    // ["Medis", "Tree"],
+    // ["Menulis", "Moon"],
+    // ["Mesa", "Meat"],
+    // ["Mygtukas", "Button"],
+    // ["Padanga", "Tire"],
+    // ["Palaidine", "Shirt"],
+    // ["Paukstis", "Bird"],
+    // ["Pliazas", "Beach"],
+    // ["Plyta", "Brick"],
+    // ["Pomidoras", "Tomato"],
+    // ["Pupa", "Bean"],
+    // ["Purvas", "Dirt"],
+    // ["Sakute",  "Fork"],
+    // ["Sausainis", "Cookie"],
+    // ["Sepetys", "Brush"],
+    // ["Smegenys", "Brain"], 
+    // ["Sriuba", "Soup"],
+    // ["Stogas", "Roof"],
+    // ["Tinklas", "Net"],
+    // ["Tvora", "Fence"], 
+    // ["Upe", "River"], 
+    // ["Vejas", "Wind"], 
+    // ["Vilkas", "Wolf"], 
+    // ["Vinis", "Nail"],
+    // ["Zele", "Jelly"], 
+    // ["Zirkles", "Scissors"], 
+    // ["Zole", "Grass"]
 ];
 
 // https://stackoverflow.com/a/36756480
 // randomly select one of these two word pair arrays for the experiment
+// change 0.00000001 back to 0.5 for randomization
 let wordPairsForExperiment = Math.random() < 0.000001 ? wordPairsA : wordPairsB
 
 let timeline = [];
@@ -70,6 +117,7 @@ const sampleIntro = {
     stimulus: "<div class='main' style='font-size:20px'>Press any key to get started.</div>"
 }
 timeline.push(sampleIntro)
+
 // code to show a cross
 function getCrossText(duration) {
     const crossText = {
@@ -106,18 +154,6 @@ function study() {
     }
 }
 
-function getRandomInt(x, y) {
-    return Math.floor(Math.random() * (y - x + 1) + x);
-}
-
-
-function randomMathOperation() {
-    return Math.random() < 0.5 ? '+' : '-'
-}
-
-function randomMathQuestion() {
-    return getRandomInt(1, 99) + ' ' + randomMathOperation() + ' ' + getRandomInt(1, 99)
-}
 
 let testTrials = 0
 let answersTestedCorrectly = []
@@ -225,6 +261,17 @@ function testCriteria(isFinalTest) {
     console.log('questions', questions)
 }
 
+function getRandomInt(x, y) {
+    return Math.floor(Math.random() * (y - x + 1) + x);
+}
+
+function randomMathOperation() {
+    return Math.random() < 0.5 ? '+' : '-'
+}
+
+function randomMathQuestion() {
+    return getRandomInt(1, 99) + ' ' + randomMathOperation() + ' ' + getRandomInt(1, 99)
+}
 
 function math(done) {
     console.log('math!')
@@ -309,7 +356,27 @@ function tetris(done) {
         }
     }, 1000)
 }
-
+function selfMeasure(){
+    var likert_scale = [
+        '<span style="font-size: 50%;"> 1 <span style="font-size: 40%;">(lowest)</span> </span>', 
+        '<span style="font-size: 50%;"> 2 </span>', 
+        '<span style="font-size: 50%;"> 3 </span>', 
+        '<span style="font-size: 50%;"> 4 </span>', 
+        '<span style="font-size: 50%;"> 5 <span style="font-size: 40%;">(highest)</span></span>'
+      ];
+      
+      var trial = {
+        type: 'survey-likert',
+        questions: [
+          {prompt: '<span style="font-size: 150%;"> How interested were you in this task?</span> ', name: 'interest', labels: likert_scale},
+          {prompt: '<span style="font-size: 150%;"> How difficult did you think this task was?</span>', name: 'difficult', labels: likert_scale},
+          {prompt: '<span style="font-size: 150%;"> How much effort did you expend when completing this task?</span>', name: 'effort', labels: likert_scale},
+        ],
+        randomize_question_order: false,
+        scale_width: 500 
+      };
+      timeline.push(trial)
+}
 // the first test has all the questions
 // for each question, the participant is shown the first word + a blank (using survey-text)
 // a response is entered, and they are given feedback 
@@ -318,19 +385,19 @@ function tetris(done) {
 // (while) repeat this up to 16 total times, or until every question has been gotten right once
 
 
-// study()
+study()
 testCriteria(false)
-// study()
-
+study()
 // tetris
-// timeline.push({
-//     type: 'call-function',
-// async: true,
-//     func: tetris
-// })
+timeline.push({
+    type: 'call-function',
+async: true,
+    func: tetris
+})
 
 // final test
-// testCriteria(true)
+testCriteria(true)
+selfMeasure()
 
 timeline.push({
     type: 'html-keyboard-response',
